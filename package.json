@@ -16,10 +16,8 @@
     "express": "^4.16.4",
     "express-formidable": "^1.2.0",
     "formidable": "^1.2.1",
+    "fs-path": "^0.0.24",
     "jsonwebtoken": "^8.4.0",
     "mongodb": "^3.2.1"
-  },
-  "dependencies": {
-    "fs-path": "^0.0.24"
   }
 }
