@@ -1,4 +1,5 @@
 const fs = require('fs');
+const AWS = require('aws-sdk');
 var fsPath = require('fs-path');
 const jwt = require('jsonwebtoken');
 const config = require('./config');
@@ -7,8 +8,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const MongoClient = require('mongodb').MongoClient;
 const cors = require('cors');
+AWS.config.update(config.awsSecret);
+const s3 = new AWS.S3();
 
 let db;
+const s3Bucket = 'save-text1';
 const app = express()
 app.use(cors())
 const whitelist = ['http://localhost:8080']
@@ -178,13 +182,15 @@ app.post('/folderStructure',checkAuth,(req,res,next)=>{
 
 app.get('/getFile',checkAuth,(req,res,next)=>{
 	const filePath = req.user._id+'/'+req.query.file;
-	fs.readFile(filePath,(err,data)=>{
-		if(err){
-			next(err);
-			return;
+	s3.getObject({
+	Bucket: s3Bucket,
+	Key: filePath
+	},function (err,resp) {
+		if(err || !resp.Body) {
+			return res.status(404).send('Error')
 		}
-		res.send(data)
-	})
+		return res.send(resp.Body.toString('utf-8'))
+	});
 
 })
 
@@ -193,13 +199,16 @@ app.post('/saveFiles',checkAuth,(req,res,next)=>{
 	files.forEach((file,ind)=>{
 		const filePath = req.user._id+'/'+file.path;
 		const content = file.content;
-		fsPath.writeFile(filePath, content, function(err){
-		  if(err) {
-		    next(err);
-		    return;
-		  } 
-		  if(ind === files.length-1){
-		    	res.send('files saved successfully');
+		s3.putObject({
+		  Bucket: s3Bucket,
+		  Key: filePath,
+		  Body: content
+		},function (err,resp) {
+		  if(err){
+		  	return res.status(500).send('Not Saved');
+		  }
+		  if(ind === files.length - 1){
+		  	res.send('files saved successfully')
 		  }
 		});
 	})
