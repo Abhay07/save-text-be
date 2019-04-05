@@ -91,11 +91,11 @@ app.post('/register',checkAuth,(req,res,next)=>{
 	const role = req.user.role;
 	const username = req.body.username;
 	const password = req.body.password;
-	if(!username || !password){
+	const name = req.body.name;
+	if(!username || !password || !name){
 		res.status(422).send('Invalid info');
 		return;
 	}
-
 	if(role !== 'admin'){
 		return res.status(401).send('Unauthorized');
 	}
@@ -107,7 +107,13 @@ app.post('/register',checkAuth,(req,res,next)=>{
 				res.send('User already exists');
 				return;
 			}
-			usersDb.insert({username:username,password:password,_id:id,role:'user'},(err,result)=>{
+			usersDb.insert({
+				username:username,
+				password:password,
+				name:name,
+				_id:id,
+				role:'user'
+			},(err,result)=>{
 				if(err) return console.log(err);
 				res.send('User created successfully');
 			})				
@@ -152,12 +158,14 @@ app.get('/users',checkAuth,(req,res,next)=>{
 
 app.get('/folderStructure',checkAuth,(req,res,next)=>{
 	const userId = req.user._id;
+	const name = req.user.name;
 	const folderCollection = db.collection('folderStructure');
 	folderCollection.findOne({userId:Number(userId)},{
 		projection:{userId:0,_id:0}
 	},(err,result)=>{
 		if(err) return next(err);
-		if(!result) return res.status(404).send('Not found');
+		if(!result) return res.send({name:name});
+		result.name = name;
 		res.send(result);
 	});
 })
