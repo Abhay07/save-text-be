@@ -14,8 +14,8 @@ const s3 = new AWS.S3();
 let db;
 const s3Bucket = 'save-text1';
 const app = express()
-/*app.use(cors())
-const whitelist = ['http://localhost:8080']
+app.use(cors())
+const whitelist = ['http://localhost:8080','https://cedriclajoiewow.com','http://cedriclajoiewow.com']
 const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
@@ -25,7 +25,6 @@ const corsOptions = {
     }
   }
 }
-*/
 
 
 MongoClient.connect('mongodb://abhay07:abhay0707@ds127864.mlab.com:27864/cedfilesystem',(err,database)=>{
